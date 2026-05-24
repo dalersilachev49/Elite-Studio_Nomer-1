@@ -139,6 +139,24 @@
             color: var(--accent);
         }
 
+        /* Mobile menu button */
+        .mobile-menu-btn {
+            display: none;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+
+        .mobile-menu-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
         /* Hero Section */
         .hero {
             padding: 10rem 0 6rem;
@@ -414,6 +432,7 @@
             justify-content: center;
             align-items: center;
             padding: 2rem;
+            overflow-y: auto;
         }
 
         .modal-overlay.active {
@@ -431,6 +450,7 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            margin: auto;
         }
 
         .modal-header {
@@ -539,6 +559,7 @@
             margin-bottom: 2rem;
             border-bottom: 1px solid var(--border);
             padding-bottom: 1rem;
+            overflow-x: auto;
         }
 
         .admin-tab {
@@ -552,6 +573,7 @@
             transition: all 0.3s;
             font-family: inherit;
             font-size: 0.95rem;
+            white-space: nowrap;
         }
 
         .admin-tab:hover {
@@ -680,6 +702,7 @@
             margin-top: 2rem;
             padding-top: 2rem;
             border-top: 1px solid var(--border);
+            flex-wrap: wrap;
         }
 
         /* Toast Notification */
@@ -724,6 +747,10 @@
                 display: none;
             }
 
+            .mobile-menu-btn {
+                display: block;
+            }
+
             .products-grid {
                 grid-template-columns: 1fr;
             }
@@ -735,6 +762,11 @@
             .modal {
                 max-height: 95vh;
                 border-radius: 16px;
+                max-width: 95%;
+            }
+
+            .modal-header h2 {
+                font-size: 1.25rem;
             }
 
             .products-table {
@@ -744,6 +776,29 @@
             .products-table th,
             .products-table td {
                 padding: 0.75rem;
+            }
+
+            .modal-body {
+                padding: 1.5rem;
+            }
+
+            .modal-header {
+                padding: 1rem 1.5rem;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .btn-save, .btn-cancel {
+                width: 100%;
+            }
+
+            .toast {
+                bottom: 1rem;
+                right: 1rem;
+                left: 1rem;
             }
         }
 
@@ -796,6 +851,7 @@
                     <a href="https://t.me/+riiZK5ONVAUzMDYy" target="_blank">Канал</a>
                     <button class="admin-btn" onclick="openAdmin()" title="Админ панель">🔒</button>
                 </div>
+                <button class="mobile-menu-btn" onclick="openAdmin()" title="Админ панель">🔒</button>
             </nav>
         </div>
     </header>
@@ -811,7 +867,7 @@
                 Создаём <span>цифровые</span><br>шедевры под заказ
             </h1>
             <p class="animate-in delay-2">
-                От уникальных карточек и стильных сайтов до оригинальных песен — воплощаем ваши идеи в жизнь с вниманием к деталям
+                От уникальных карточек и стильных сайтов до оригинальных песен — воплощаем ваши идеи в жизнь с высоким качеством
             </p>
             <div class="hero-buttons animate-in delay-3">
                 <a href="#products" class="btn btn-primary">
@@ -998,179 +1054,104 @@
                 }
             } else {
                 products = [...DEFAULT_PRODUCTS];
-                saveProducts();
             }
         }
 
-        // Save products to localStorage
-        function saveProducts() {
-            localStorage.setItem('lucifer_products', JSON.stringify(products));
-        }
-
-        // Generate Telegram order link
-        function getOrderLink(productTitle) {
-            const text = `Здравствуйте! Хочу заказать товар: "${productTitle}". Прошу свяжитесь со мной для обсуждения деталей.`;
-            return `https://t.me/${CONFIG.telegramUsername}?text=${encodeURIComponent(text)}`;
-        }
-
-        // Render products
+        // Render products to page
         function renderProducts() {
             const container = document.getElementById('productsContainer');
-            
-            if (products.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1 / -1;">
-                        <div class="empty-state-icon">📭</div>
-                        <h3>Пока нет товаров</h3>
-                        <p>Зайдите в админ панель, чтобы добавить первый товар</p>
-                    </div>
-                `;
+            if (!products.length) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📦</div><p>Товары отсутствуют</p></div>';
                 return;
             }
 
             container.innerHTML = products.map(product => `
                 <div class="product-card">
-                    <div class="product-image">
-                        ${product.image ? `<img src="${product.image}" alt="${product.title}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=\\'font-size:3rem\\'>${product.emoji || '📦'}</span>';">` : `<span style="font-size:3rem">${product.emoji || '📦'}</span>`}
-                    </div>
+                    <div class="product-image">${product.emoji}</div>
                     <div class="product-content">
                         <span class="product-category">${product.categoryName}</span>
                         <h3 class="product-title">${product.title}</h3>
                         <p class="product-description">${product.description}</p>
                         <div class="product-footer">
-                            <div class="product-price">
-                                ${product.price} <span class="currency">₽</span>
-                            </div>
-                            <a href="${getOrderLink(product.title)}" target="_blank" class="btn-order">
-                                Заказать
-                            </a>
+                            <div class="product-price"><span class="currency">₽</span> ${product.price}</div>
+                            <a href="https://t.me/Lucifer_Knyazev" target="_blank" class="btn-order">Заказать</a>
                         </div>
                     </div>
                 </div>
             `).join('');
         }
 
-        // Admin Panel Functions
+        // Admin functions
         function openAdmin() {
-            document.getElementById('adminModal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-            
             if (!isAdmin) {
                 showLoginForm();
             } else {
                 showAdminDashboard();
             }
+            document.getElementById('adminModal').classList.add('active');
         }
 
         function closeAdmin() {
             document.getElementById('adminModal').classList.remove('active');
-            document.body.style.overflow = '';
             editingProduct = null;
         }
 
         function showLoginForm() {
-            document.getElementById('modalTitle').textContent = 'Вход в админ панель';
-            document.getElementById('modalBody').innerHTML = `
+            const modalBody = document.getElementById('modalBody');
+            const modalTitle = document.getElementById('modalTitle');
+            modalTitle.textContent = 'Вход в панель администратора';
+            
+            modalBody.innerHTML = `
                 <div class="login-form">
-                    <h3>🔐 Авторизация</h3>
-                    <p>Введите пароль для доступа к управлению товарами</p>
+                    <h3>🔐 Вход</h3>
+                    <p>Введите пароль администратора</p>
                     <div class="form-group">
-                        <label>Пароль</label>
-                        <input type="password" id="adminPassword" placeholder="Введите пароль..." onkeypress="if(event.key==='Enter') login()">
+                        <label for="adminPassword">Пароль</label>
+                        <input type="password" id="adminPassword" placeholder="••••••" onkeypress="if(event.key==='Enter') login()">
                     </div>
-                    <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="login()">
-                        Войти
-                    </button>
+                    <div class="form-actions">
+                        <button class="btn-save" onclick="login()">Войти</button>
+                        <button class="btn-cancel" onclick="closeAdmin()">Отмена</button>
+                    </div>
                 </div>
             `;
-            setTimeout(() => document.getElementById('adminPassword')?.focus(), 100);
         }
 
         function login() {
             const password = document.getElementById('adminPassword').value;
             if (password === CONFIG.adminPassword) {
                 isAdmin = true;
-                showToast('Успешный вход!', 'success');
                 showAdminDashboard();
             } else {
-                showToast('Неверный пароль!', 'error');
-                document.getElementById('adminPassword').value = '';
-                document.getElementById('adminPassword').focus();
+                showToast('Неправильный пароль', 'error');
             }
         }
 
         function showAdminDashboard() {
-            document.getElementById('modalTitle').innerHTML = '<span>⚙️</span> Управление товарами';
-            renderAdminPanel();
-        }
-
-        function renderAdminPanel() {
-            document.getElementById('modalBody').innerHTML = `
-                <div class="admin-tabs">
-                    <button class="admin-tab active" data-tab="list" onclick="switchTab('list', this)">📋 Список товаров</button>
-                    <button class="admin-tab" data-tab="add" onclick="switchTab('add', this)">➕ Добавить товар</button>
-                </div>
-                
-                <div id="tab-list" class="admin-panel active">
-                    ${renderProductsList()}
-                </div>
-                
-                <div id="tab-add" class="admin-panel">
-                    ${renderProductForm()}
-                </div>
-            `;
-        }
-
-        function switchTab(tab, button) {
-            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+            const modalBody = document.getElementById('modalBody');
+            const modalTitle = document.getElementById('modalTitle');
+            modalTitle.textContent = 'Админ панель';
             
-            button = button || document.querySelector(`.admin-tab[data-tab="${tab}"]`);
-            if (button) {
-                button.classList.add('active');
-            }
-            document.getElementById('tab-' + tab).classList.add('active');
-            
-            if (tab === 'add') {
-                editingProduct = null;
-                document.getElementById('tab-add').innerHTML = renderProductForm();
-            }
-        }
-
-        function renderProductsList() {
-            if (products.length === 0) {
-                return `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📭</div>
-                        <h3>Нет товаров</h3>
-                        <p>Нажмите "Добавить товар", чтобы создать первый</p>
-                    </div>
-                `;
-            }
-
-            return `
+            const productsTableHTML = `
                 <table class="products-table">
                     <thead>
                         <tr>
-                            <th>Товар</th>
-                            <th>Категория</th>
+                            <th>Название</th>
                             <th>Цена</th>
+                            <th>Категория</th>
                             <th>Действия</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${products.map(p => `
+                        ${products.map(product => `
                             <tr>
-                                <td>
-                                    <div class="product-name">${p.title}</div>
-                                    <div style="font-size: 0.8rem; margin-top: 0.25rem;">${p.description.substring(0, 50)}...</div>
-                                </td>
-                                <td><span class="product-category">${p.categoryName}</span></td>
-                                <td style="font-weight: 600; color: var(--accent);">${p.price} ₽</td>
+                                <td class="product-name">${product.title}</td>
+                                <td>₽${product.price}</td>
+                                <td>${product.categoryName}</td>
                                 <td>
                                     <div class="table-actions">
-                                        <button class="btn-icon btn-edit" onclick="editProduct('${p.id}')" title="Редактировать">✏️</button>
-                                        <button class="btn-icon btn-delete" onclick="deleteProduct('${p.id}')" title="Удалить">🗑️</button>
+                                        <button class="btn-icon btn-edit" onclick="editProduct('${product.id}')" title="Редактировать">✏️</button>
+                                        <button class="btn-icon btn-delete" onclick="deleteProduct('${product.id}')" title="Удалить">🗑️</button>
                                     </div>
                                 </td>
                             </tr>
@@ -1178,180 +1159,185 @@
                     </tbody>
                 </table>
             `;
-        }
 
-        function renderProductForm() {
-            const p = editingProduct || {};
-            const isEdit = !!editingProduct;
-            
-            return `
-                <form onsubmit="saveProduct(event)">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Название товара *</label>
-                            <input type="text" id="prodTitle" value="${p.title || ''}" placeholder="Например: Дизайн визитки" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Цена (₽) *</label>
-                            <input type="number" id="prodPrice" value="${p.price || ''}" placeholder="1000" required>
-                        </div>
+            modalBody.innerHTML = `
+                <div class="admin-tabs">
+                    <button class="admin-tab active" onclick="switchTab('products', event)">Товары</button>
+                    <button class="admin-tab" onclick="switchTab('add', event)">Добавить</button>
+                    <button class="admin-tab" onclick="logout(event)">Выход</button>
+                </div>
+                <div id="productsPanel" class="admin-panel active">
+                    ${productsTableHTML}
+                </div>
+                <div id="addPanel" class="admin-panel">
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="margin-bottom: 1rem;">Добавить новый товар</h3>
+                        ${getProductForm()}
                     </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Категория *</label>
-                            <select id="prodCategory" required onchange="updateCategoryName()">
-                                <option value="cards" ${p.category === 'cards' ? 'selected' : ''}>🎴 Карточки</option>
-                                <option value="websites" ${p.category === 'websites' ? 'selected' : ''}>🌐 Сайты</option>
-                                <option value="music" ${p.category === 'music' ? 'selected' : ''}>🎵 Музыка</option>
-                                <option value="other" ${p.category === 'other' ? 'selected' : ''}>📦 Другое</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Иконка (emoji)</label>
-                            <input type="text" id="prodEmoji" value="${p.emoji || ''}" placeholder="🎨" maxlength="2">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Описание *</label>
-                        <textarea id="prodDescription" placeholder="Опишите товар подробно..." required>${p.description || ''}</textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Ссылка на изображение (опционально)</label>
-                        <input type="url" id="prodImage" value="${p.image || ''}" placeholder="https://example.com/image.jpg">
-                        <small style="color: var(--text-muted); margin-top: 0.5rem; display: block;">Оставьте пустым, чтобы использовать emoji</small>
-                    </div>
-                    
-                    <input type="hidden" id="prodId" value="${p.id || ''}">
-                    <input type="hidden" id="prodCategoryName" value="${p.categoryName || 'Карточки'}">
-                    <div class="form-actions">
-                        ${isEdit ? `<button type="button" class="btn-cancel" onclick="cancelEdit()">Отмена</button>` : ''}
-                        <button type="submit" class="btn-save">
-                            ${isEdit ? '💾 Сохранить изменения' : '➕ Добавить товар'}
-                        </button>
-                    </div>
-                </form>
+                </div>
             `;
         }
 
-        function updateCategoryName() {
-            const cat = document.getElementById('prodCategory');
-            const names = {
-                'cards': 'Карточки',
-                'websites': 'Сайты',
-                'music': 'Музыка',
-                'other': 'Другое'
-            };
-            document.getElementById('prodCategoryName').value = names[cat.value] || 'Другое';
+        function getProductForm(product = null) {
+            const categories = [
+                { value: 'cards', label: 'Карточки' },
+                { value: 'websites', label: 'Сайты' },
+                { value: 'music', label: 'Музыка' }
+            ];
+
+            return `
+                <div class="form-group">
+                    <label for="productTitle">Название</label>
+                    <input type="text" id="productTitle" value="${product?.title || ''}" placeholder="Введите название">
+                </div>
+                <div class="form-group">
+                    <label for="productDescription">Описание</label>
+                    <textarea id="productDescription" placeholder="Введите описание">${product?.description || ''}</textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productPrice">Цена (₽)</label>
+                        <input type="number" id="productPrice" value="${product?.price || ''}" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="productCategory">Категория</label>
+                        <select id="productCategory">
+                            ${categories.map(cat => `<option value="${cat.value}" ${product?.category === cat.value ? 'selected' : ''}>${cat.label}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="productEmoji">Эмодзи</label>
+                    <input type="text" id="productEmoji" value="${product?.emoji || '🎴'}" placeholder="🎴" maxlength="2">
+                </div>
+                <div class="form-actions">
+                    <button class="btn-save" onclick="saveProduct()">${product ? 'Сохранить изменения' : 'Добавить товар'}</button>
+                    <button class="btn-cancel" onclick="cancelEdit()">Отмена</button>
+                </div>
+            `;
         }
 
-        function saveProduct(e) {
-            e.preventDefault();
+        function switchTab(tab, event) {
+            event.preventDefault();
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
             
-            const id = document.getElementById('prodId').value || Date.now().toString();
-            const title = document.getElementById('prodTitle').value.trim();
-            const price = document.getElementById('prodPrice').value;
-            const category = document.getElementById('prodCategory').value;
-            const categoryName = document.getElementById('prodCategoryName').value;
-            const description = document.getElementById('prodDescription').value.trim();
-            const image = document.getElementById('prodImage').value.trim();
-            const emoji = document.getElementById('prodEmoji').value.trim() || '📦';
-            
-            if (!title || !price || !description) {
-                showToast('Заполните все обязательные поля!', 'error');
-                return;
-            }
-            
-            const productData = {
-                id,
-                title,
-                price,
-                category,
-                categoryName,
-                description,
-                image,
-                emoji
-            };
-            
-            if (editingProduct) {
-                const index = products.findIndex(p => p.id === id);
-                if (index !== -1) {
-                    products[index] = productData;
-                }
-            } else {
-                products.push(productData);
-            }
-            
-            saveProducts();
-            renderProducts();
-            
-            showToast(editingProduct ? 'Товар обновлён!' : 'Товар добавлен!', 'success');
-            
-            editingProduct = null;
-            renderAdminPanel();
-            switchTab('list');
+            document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(tab + 'Panel').classList.add('active');
         }
 
         function editProduct(id) {
-            const product = products.find(p => p.id === id);
-            if (!product) return;
+            editingProduct = products.find(p => p.id === id);
+            const addPanel = document.getElementById('addPanel');
+            addPanel.innerHTML = `
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Редактировать товар</h3>
+                    ${getProductForm(editingProduct)}
+                </div>
+            `;
             
-            editingProduct = product;
-            renderAdminPanel();
-            switchTab('add');
+            const tabs = document.querySelectorAll('.admin-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            tabs[1].classList.add('active');
+            document.getElementById('productsPanel').classList.remove('active');
+            document.getElementById('addPanel').classList.add('active');
+        }
+
+        function saveProduct() {
+            const title = document.getElementById('productTitle').value.trim();
+            const description = document.getElementById('productDescription').value.trim();
+            const price = document.getElementById('productPrice').value.trim();
+            const category = document.getElementById('productCategory').value;
+            const emoji = document.getElementById('productEmoji').value.trim();
+
+            if (!title || !description || !price) {
+                showToast('Заполните все обязательные поля', 'error');
+                return;
+            }
+
+            if (editingProduct) {
+                const index = products.findIndex(p => p.id === editingProduct.id);
+                products[index] = {
+                    ...editingProduct,
+                    title,
+                    description,
+                    price,
+                    category,
+                    categoryName: getSelectedCategoryName(category),
+                    emoji
+                };
+                showToast('Товар обновлён', 'success');
+            } else {
+                const newProduct = {
+                    id: String(Date.now()),
+                    title,
+                    description,
+                    price,
+                    category,
+                    categoryName: getSelectedCategoryName(category),
+                    emoji,
+                    image: ''
+                };
+                products.push(newProduct);
+                showToast('Товар добавлен', 'success');
+            }
+
+            saveProducts();
+            editingProduct = null;
+            renderProducts();
+            showAdminDashboard();
+        }
+
+        function getSelectedCategoryName(category) {
+            const categories = { cards: 'Карточки', websites: 'Сайты', music: 'Музыка' };
+            return categories[category] || category;
         }
 
         function deleteProduct(id) {
-            if (!confirm('Вы уверены, что хотите удалить этот товар?')) return;
-            
-            products = products.filter(p => p.id !== id);
-            saveProducts();
-            renderProducts();
-            
-            showToast('Товар удалён!', 'success');
-            renderAdminPanel();
+            if (confirm('Вы уверены, что хотите удалить этот товар?')) {
+                products = products.filter(p => p.id !== id);
+                saveProducts();
+                renderProducts();
+                showAdminDashboard();
+                showToast('Товар удалён', 'success');
+            }
         }
 
         function cancelEdit() {
             editingProduct = null;
-            renderAdminPanel();
-            switchTab('list');
+            showAdminDashboard();
+        }
+
+        function logout(event) {
+            event.preventDefault();
+            isAdmin = false;
+            closeAdmin();
+            showToast('Вы вышли из системы', 'success');
+        }
+
+        // Save products to localStorage
+        function saveProducts() {
+            localStorage.setItem('lucifer_products', JSON.stringify(products));
         }
 
         // Toast notification
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toastIcon');
-            const msg = document.getElementById('toastMessage');
+            const text = document.getElementById('toastMessage');
             
-            toast.className = 'toast ' + type;
             icon.textContent = type === 'success' ? '✓' : '✕';
-            msg.textContent = message;
-            
+            text.textContent = message;
+            toast.className = `toast ${type}`;
             toast.classList.add('show');
             
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
         }
-        // Close modal on overlay click
-        document.getElementById('adminModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeAdmin();
-            }
-        });
 
-        // Close on Escape
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeAdmin();
-            }
-        });
-
-        // Initialize on load
-        init();
+        // Start
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
